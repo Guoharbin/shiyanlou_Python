@@ -1,9 +1,38 @@
 from flask import Flask
 from flask import render_template
 from flask import request
-app = Flask(__name__)
+import os
+from flask import redirect, url_for
+from werkzeug import secure_filename
 
-@app.route('/')
+UPLOAD_FOLDER = '/path/to/the/uploads'
+ALLOWED_EXTENSIONS = set(['txt','png','jpg','gif'])
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rspilt('.',1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/', methods=['POST','GET'])
+def upload_file():
+    if request.method == 'POST':
+        file =request.files['file']
+        if file and allowed_file(file.filename):
+            filename =secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file', filename=fielname))
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form action="" method=post enctype=multipart/form-data>
+     <p><input type=file name=<file>
+        <input type=submit value=Upload>
+    </form>
+    '''
+@app.route('/index')
 def index():
     username = request.cookies.get('username')
     resp = make_response(render_template(...))
@@ -42,8 +71,8 @@ def login():
     #当请求形式为“GET”或者认证失败则执行以下代码
     return render_template('login.html', error=error)
 
-@app.route('/upload', method=['GET', 'POST'])
-def upload_file():
+@app.route('/upload1', methods=['GET', 'POST'])
+def upload_file1():
     if request.method == 'POST':
         f = request.files['the_file']
         f.save('/var/www/uploads/' + secure_filename(f.filename))
